@@ -9,13 +9,9 @@ Created on Mon Jan  2 21:36:12 2023
 
 # webcam鏡頭
 import cv2
-import numpy as np
 import time
-import os
 import mediapipe as mp
 import math
-import sys
-from pygame import mixer
 import pygame
 
 pygame.mixer.init()
@@ -25,13 +21,8 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 i=0
-save_path = r'/Users/wangyongping/Desktop/LSA_project/Object-Detector-main'      # 儲存路徑
-file_name = 'test'                          # 檔名
-
-
-#發出聲音用的
-frequency = 2000
-duration = 1000
+#save_path = r'Object-Detector-main'      # 儲存路徑
+#file_name = 'test'                          # 檔名
 
 thres = 0.45 # Threshold to detect object
 
@@ -41,19 +32,18 @@ cap.set(4,720)
 cap.set(10,70)
 
 classNames= []
-classFile = r'/Users/wangyongping/Desktop/LSA_project/Object-Detector-main/coco.names'
+classFile = r'Object-Detector-main/coco.names'
 with open(classFile,'rt') as f:
     classNames = f.read().rstrip('\n').split('\n')
 
-configPath = r'/Users/wangyongping/Desktop/LSA_project/Object-Detector-main/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
-weightsPath = r'/Users/wangyongping/Desktop/LSA_project/Object-Detector-main/frozen_inference_graph.pb'
+configPath = r'Object-Detector-main/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+weightsPath = r'Object-Detector-main/frozen_inference_graph.pb'
 
 net = cv2.dnn_DetectionModel(weightsPath,configPath)
 net.setInputSize(320,320)
 net.setInputScale(1.0/ 127.5)
 net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
-
 
 # 根據兩點的座標，計算角度
 def vector_2d_angle(v1, v2):
@@ -111,17 +101,9 @@ def hand(finger_angle):
     cap = cv2.VideoCapture(1)
     #print(type(cap))
     
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    #print("圖片長寬",width,height)
-    # get fourcc
-    fourcc = cap.get(cv2.CAP_PROP_FOURCC)
-    codec = decode_fourcc(fourcc)
-    #print("Codec:",codec)
     
     cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT,960)
-    
     
 # 根據手指角度的串列內容，返回對應的手勢名稱
     f1 = finger_angle[0]   # 大拇指角度
@@ -167,26 +149,9 @@ def tomato(minutes, notify_msg):
     #print(int(left_seconds / 60), int(left_seconds % 60))
     return left_seconds
 
-
-def progressbar(curr, total, duration=10, extra=''):
-    frac = curr / total
-    filled = round(frac * duration)
-    print('\r', '🍅' * filled + '--' * (duration - filled), '[{:.0%}]'.format(frac), extra, end='')
-
-
-
-'''def countdown():
-
-    a = tomato(1, 'It is time to take a break')
-    #print(a)
-    for i in range(a,0,-1):
-        print(int(i / 60), int(i % 60))
-        return int(i / 60), int(i % 60)
-'''
-
     
 def main():
-    face_cascade = cv2.CascadeClassifier("face.xml")
+    #face_cascade = cv2.CascadeClassifier("face.xml")
     cap = cv2.VideoCapture(1)            # 讀取攝影機
     fontFace = cv2.FONT_HERSHEY_SIMPLEX  # 印出文字的字型
     lineType = cv2.LINE_AA               # 印出文字的邊框
@@ -203,25 +168,27 @@ def main():
         while True:
             ret,frame= cap.read()
             #img = cv2.resize(img, (w,h))                 # 縮小尺寸，加快處理效率
-            #cv2.imshow('ugly face',frame)
             classIds, confs, bbox = net.detect(frame,confThreshold=thres)
             if 77 in classIds:
-                cv2.putText(frame, "Warning",(30,120), fontFace, 3, (255, 255, 255), 10, lineType) # 印出文字
+                cv2.putText(frame, "Warning!!",(330,400), fontFace, 5, (0,0,255), 10, lineType) # 印出文字
                 warning.play()
+            elif 1 not in classIds:
+                cv2.putText(frame, "NOT FOUND!!!",(180,400), fontFace, 5, (0, 0, 255), 8, cv2.FONT_HERSHEY_COMPLEX) # 印出文字
             if len(classIds) != 0:
                 for classId, confidence,box in zip(classIds.flatten(),confs.flatten(),bbox):
-                    cv2.rectangle(frame,box,color=(0,255,0),thickness=2)
-                    cv2.putText(frame,classNames[classId-1].upper(),(box[0]+10,box[1]+30),
-                                cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
-                    cv2.putText(frame,str(round(confidence*100,2)),(box[0]+200,box[1]+30),
-                                cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
+                    if classId == 77:
+                        cv2.rectangle(frame,box,color=(0,0,255),thickness=2)
+                        cv2.putText(frame,classNames[classId-1].upper(),(box[0]+10,box[1]+30),
+                                    cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),2)
+                        #cv2.putText(frame,str(round(confidence*100,2)),(box[0]+10,box[1]+70),
+                                    #cv2.FONT_HERSHEY_COMPLEX,0.8,(0,0,255),2)
                     
             nowtime = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
-            cv2.putText(frame, nowtime, (300, 150), cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 2, (255, 255, 255), 5, cv2.LINE_AA)
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   # 將鏡頭影像轉換成灰階
-            faces = face_cascade.detectMultiScale(gray)      # 偵測人臉
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)   # 標記人臉
+            cv2.putText(frame, nowtime, (300, 120), cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 2, (255, 255, 255), 3, cv2.LINE_AA)
+            #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   # 將鏡頭影像轉換成灰階
+            #faces = face_cascade.detectMultiScale(gray)      # 偵測人臉
+            #for (x, y, w, h) in faces:
+                #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)   # 標記人臉
             img2 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # 轉換成 RGB 色彩
             results = hands.process(img2)                # 偵測手勢
             if results.multi_hand_landmarks:
@@ -236,21 +203,21 @@ def main():
                         finger_angle = hand_angle(finger_points) # 計算手指角度，回傳長度為 5 的串列
                         #print(finger_angle)                     # 印出角度 ( 有需要就開啟註解 )
                         text = hand(finger_angle)            # 取得手勢所回傳的內容
-                        cv2.putText(frame, text,(30,120), fontFace, 3, (255, 255, 255), 10, lineType) # 印出文字
+                        cv2.putText(frame, text,(30,120), fontFace, 3, (255, 255, 255), 8, lineType) # 印出文字
             #a = tomato(1, 'It is times to take a break')
             #print(a)
             a = a - 0.3
-            minute = str(int(a / 60))
-            sec = str(int(a % 60))
+            minute = str(int(a / 60)).zfill(2)
+            sec = str(int(a % 60)).zfill(2)
             countdown = "remaining time=" + minute + ":" + sec
-            cv2.putText(frame, countdown, (160,220), fontFace, 2, (0,0,0), 3, lineType) # 印出文字
+            cv2.putText(frame, countdown, (300,220), fontFace, 2, (0,0,0), 3, lineType) # 印出文字
                 #cv2.putText(frame, text, (30,120), fontFace, 5, (255, 255, 255), 10, lineType) # 印出文字
             if int(minute) <= 0 and int(sec) <= 0:
                 count+=1
                 #print(count)
                 time.sleep(1)
                 #cv2.putText(frame, "relax time", (160,220), fontFace, 2, (0,0,0), 3, lineType)
-                if count == 2:
+                if count == 4:
                     break
                 elif count%2 != 0:
                     a += 10
@@ -273,24 +240,7 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
-    # 輸出影片
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter("Output.avi",fourcc,20.0,(640,360))
-    while (cap.isOpened()):
-        ret,frame = cap.read()
-        if ret == True:
-            out.write(frame)
-            cv2.imshow('ugly face',frame)
-            # 使用各種字體
-            if cv2.waitKey(1) & 0xFF == ord('q'): # 按q關閉
-                break
-        else:
-            break
     cap.release()
-    out.release()
     cv2.destroyAllWindows()
 
 main()
