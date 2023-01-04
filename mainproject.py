@@ -13,16 +13,25 @@ import time
 import mediapipe as mp
 import math
 import pygame
+import datetime
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 
 pygame.mixer.init()
-warning = pygame.mixer.Sound("media.wav")
+warning1 = pygame.mixer.Sound("phonealert.wav")
+warning2= pygame.mixer.Sound("personalert.wav")
+music= pygame.mixer.Sound("relax.wav")
+shot= pygame.mixer.Sound("shot.wav")
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 i=0
-#save_path = r'Object-Detector-main'      # 儲存路徑
-#file_name = 'test'                          # 檔名
+save_path = r'/Users/wangyongping/Desktop/LSA_project/'      # 儲存路徑
+file_name = 'photo'                          # 檔名
 
 thres = 0.45 # Threshold to detect object
 
@@ -40,10 +49,36 @@ configPath = r'Object-Detector-main/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt
 weightsPath = r'Object-Detector-main/frozen_inference_graph.pb'
 
 net = cv2.dnn_DetectionModel(weightsPath,configPath)
+print(net)
 net.setInputSize(320,320)
 net.setInputScale(1.0/ 127.5)
 net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
+
+
+def mail(time):
+    today=datetime.date.today()
+    content='完成:'+str(time)+'個循環'
+
+    msg = MIMEMultipart()                         # 使用多種格式所組成的內容
+    msg.attach(MIMEText(content, 'html', 'utf-8'))   # 加入 HTML 內容
+    # 使用 python 內建的 open 方法開啟指定目錄下的檔案
+    with open('photo_0.jpg', 'rb') as file:
+        img = file.read()
+    attach_file = MIMEApplication(img, Name='photo_0.jpg')    # 設定附加檔案圖片
+    msg.attach(attach_file)                       # 加入附加檔案圖片
+
+    msg['Subject']="%s 番茄鐘使用時間"%today
+    msg['From']="tamtoooo"
+    msg['To']='una910828@gmail.com'
+
+    smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    smtp.ehlo()
+    smtp.starttls()
+    smtp.login('dryfish828@gmail.com','ccwgwsrgdxqvcgtc')#要去google 帳戶>安全性>app 生成
+    status = smtp.send_message(msg)
+    print(status)
+    smtp.quit()
 
 # 根據兩點的座標，計算角度
 def vector_2d_angle(v1, v2):
@@ -97,7 +132,7 @@ def decode_fourcc(v):
     v = int(v)
     return "".join([chr((v>>8 *i) & 0xFF) for i in range(4)])    
 
-def hand(finger_angle):
+def hand(finger_angle,frame):
     cap = cv2.VideoCapture(1)
     #print(type(cap))
     
@@ -118,12 +153,21 @@ def hand(finger_angle):
     elif f1>=50 and f2>=50 and f3>=50 and f4>=50 and f5>=50:
         return 'CLOSE' #0
     elif f1>=50 and f2<50 and f3>=50 and f4>=50 and f5>=50:
+        
         return '1'
     elif f1>=50 and f2<50 and f3<50 and f4>=50 and f5>=50:
+        shot.play()
+        cv2.imwrite(save_path + file_name + '_' + str(i) + '.jpg',frame)
+        #print('save:',file_name + '_' + str(i) + '.jpg')
         return '2'
+    
     elif f1>=50 and f2>=50 and f3<50 and f4<50 and f5<50:
+        music.play()
+        time.sleep(3)
         return 'ok'
+    '''
     elif f1<50 and f2>=50 and f3<50 and f4<50 and f5<50:
+        music.play()
         return 'ok'
     elif f1>=50 and f2<50 and f3<50 and f4<50 and f5>50:
         return '3'
@@ -134,13 +178,11 @@ def hand(finger_angle):
     elif f1<50 and f2<50 and f3<50 and f4<50 and f5<50:
         return 'STOP' #5
 
+
     else:
-        return ''
-    '''    elif f1>=50 and f2>=50 and f3<50 and f4>=50 and f5>=50:
-            return 'no!!!'
-        elif f1<50 and f2<50 and f3>=50 and f4>=50 and f5<50:
-            return 'ROCK!'
-    '''
+        return '''
+
+    
     
 def tomato(minutes, notify_msg):
     start_time = time.perf_counter()
@@ -149,8 +191,8 @@ def tomato(minutes, notify_msg):
     #print(int(left_seconds / 60), int(left_seconds % 60))
     return left_seconds
 
-    
 def main():
+    totaltime = 1
     #face_cascade = cv2.CascadeClassifier("face.xml")
     cap = cv2.VideoCapture(1)            # 讀取攝影機
     fontFace = cv2.FONT_HERSHEY_SIMPLEX  # 印出文字的字型
@@ -170,10 +212,13 @@ def main():
             #img = cv2.resize(img, (w,h))                 # 縮小尺寸，加快處理效率
             classIds, confs, bbox = net.detect(frame,confThreshold=thres)
             if 77 in classIds:
-                cv2.putText(frame, "Warning!!",(330,400), fontFace, 5, (0,0,255), 10, lineType) # 印出文字
-                warning.play()
+                cv2.putText(frame, "Warning!!",(30,400), fontFace, 5, (0,0,255), 10, lineType) # 印出文字
+                warning1.play()
+                time.sleep(1)
             elif 1 not in classIds:
                 cv2.putText(frame, "NOT FOUND!!!",(180,400), fontFace, 5, (0, 0, 255), 8, cv2.FONT_HERSHEY_COMPLEX) # 印出文字
+                warning2.play()
+                time.sleep(1)
             if len(classIds) != 0:
                 for classId, confidence,box in zip(classIds.flatten(),confs.flatten(),bbox):
                     if classId == 77:
@@ -202,7 +247,7 @@ def main():
                     if finger_points:
                         finger_angle = hand_angle(finger_points) # 計算手指角度，回傳長度為 5 的串列
                         #print(finger_angle)                     # 印出角度 ( 有需要就開啟註解 )
-                        text = hand(finger_angle)            # 取得手勢所回傳的內容
+                        text = hand(finger_angle,frame)            # 取得手勢所回傳的內容
                         cv2.putText(frame, text,(30,120), fontFace, 3, (255, 255, 255), 8, lineType) # 印出文字
             #a = tomato(1, 'It is times to take a break')
             #print(a)
@@ -222,10 +267,12 @@ def main():
                 elif count%2 != 0:
                     a += 10
                 elif count%2 == 0:
+                    totaltime += 1
                     a += 15
           
             cv2.imshow('Tomato', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'): # 按q關閉
+                mail(totaltime)
                 break
     cap.release()
     cv2.destroyAllWindows()
