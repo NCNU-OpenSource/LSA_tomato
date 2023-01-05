@@ -59,6 +59,7 @@
 ## References
 - https://www.techbang.com/posts/98379-little-brother-self-created-ai-anti-procrastination-system-as?fbclid=IwAR2PgQqElHSfI_3qW6eX_MqQHOO5SmE8TiVfZ5AM1osQ4MiB0iV8enTHW9M
 - https://github.com/sjf0213/rpi/tree/master/opencv-gesture
+- https://github.com/ayushpai/Object-Detector
 - https://blog.cavedu.com/2020/11/11/microsoft-lobe-ai/
 - https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/2
 - https://stackoverflow.com/questions/55028280/no-module-named-picamera
