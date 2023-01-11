@@ -163,8 +163,9 @@ def hand(finger_angle,frame):
     #     return 'no!!!'
     # elif f1<50 and f2<50 and f3>=50 and f4>=50 and f5<50:
     #     return 'ROCK!'
-    # elif f1<50 and f2<50 and f3<50 and f4<50 and f5<50:
-    #     return 'STOP' #5
+    elif f1<50 and f2<50 and f3<50 and f4<50 and f5<50:
+        music.stop()
+        return 'STOP' #5
     # else:
     #     return
 
@@ -185,10 +186,11 @@ def main():
         min_detection_confidence=0.5,
         min_tracking_confidence=0.5) as hands:
         w, h = 800, 450                                  # 影像尺寸
-        #starttime = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
+        # starttime = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
         count = 0
         working_time = 0
         break_time = 0
+        start = False
         send = False
         # 開鏡頭
         while True:
@@ -213,17 +215,22 @@ def main():
                         cv2.putText(frame, text,(10,30), fontFace, 1, (0, 0, 0), 3, lineType) # 印出文字
 
             # choose mode
-            if working_time == 0:
-                if text=='1':
+            if start == False:
+                if text == '1':
                     working_time = 0.1        # 5 minute
                     break_time = 0.1          # 1 minute
-                elif text=='2':
+                    start = True
+                    a = tomato(working_time, 'Go working')
+                elif text == '2':
                     working_time = 10       # 10 minute
                     break_time = 5          # 5 minute
-                elif text=='ok':
+                    start = True
+                    a = tomato(working_time, 'Go working')
+                elif text == 'ok':
                     working_time = 25       # 25 minute
                     break_time = 5          # 5 minute
-                a = tomato(working_time, 'It is times to take a break')
+                    start = True
+                    a = tomato(working_time, 'Go working')
             else:
                 if 77 in classIds:
                     cv2.putText(frame, "Warning!!", (180,250), fontFace, 2, (0, 0, 255), 3, lineType    ) # 印出文字      
@@ -242,7 +249,7 @@ def main():
                 nowtime = time.strftime('%Y/%m/%d %H:%M:%S',time.localtime(time.time()))
                 cv2.putText(frame, nowtime,(10,70), fontFace, 1, (0, 0, 0), 3, lineType) # 印出文字
 
-                a = a - 0.15
+                a = a - 0.09
                 minute = str(int(a / 60)).zfill(2)
                 sec = str(int(a % 60)).zfill(2)
                 countdown = "remaining time = " + minute + ":" + sec
@@ -253,9 +260,9 @@ def main():
                     # if count == 4:
                     #     break
                     if count%2 != 0:
-                        a += break_time
+                        a = tomato(break_time, 'Take a break')
                     elif count%2 == 0:
-                        a += working_time
+                        a = tomato(working_time, 'Go working')
             cv2.imshow('Tomato', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'): # 按q關閉
                 mail(count/2, working_time, break_time)
