@@ -49,7 +49,7 @@
     ![](https://i.imgur.com/nI3ubhD.png)
 
     
-    - ~~揚聲器~~ ![](https://i.imgur.com/3nGeAop.png)
+    - ~~揚聲器~~ ![](https://i.imgur.com/3nGeAop.png){:height="50%" weight="50%"}
     - ~~將轉接頭插入揚聲器~~ ![](https://i.imgur.com/D3aNLnT.png)
 
 3. ~~建構環境~~：
