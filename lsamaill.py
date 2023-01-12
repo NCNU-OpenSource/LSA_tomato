@@ -19,9 +19,10 @@ def main():
     smtp=smtplib.SMTP('smtp.gmail.com', 587)
     smtp.ehlo()
     smtp.starttls()#tls 加密
-    smtp.login('dryfish828@gmail.com','ccwgwsrgdxqvcgtc')#要去google 帳戶>安全性>app 生成
-    from_addr='dryfish828@gmail.com'
-    to_addr="una910828@gmail.com"
+
+    smtp.login('who_to_send@gmail.com', 'sender_account_key')
+    from_addr='who_to_send@gmail.com'
+    to_addr='send_to_who@mail1.ncnu.edu.tw'
     msg=message()
     smtp.sendmail(from_addr, to_addr, msg)
 main()
