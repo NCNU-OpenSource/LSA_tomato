@@ -343,3 +343,6 @@ def mail(count, working_time, break_time):
 - https://www.jeremymorgan.com/tutorials/raspberry-pi/how-to-install-opencv-raspberry-pi/
 - https://www.youtube.com/watch?v=QzVYnG-WaM4
 - https://www.circuspi.com/index.php/2022/07/29/ai-mediapipe-hand/
+
+## Powerpoint
+- [ppt連結](https://www.canva.com/design/DAFXVa3epzM/b-NLYZIazco1a-YTvCysxQ/view?utm_content=DAFXVa3epzM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
