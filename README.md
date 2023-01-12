@@ -1,4 +1,4 @@
-# LSA Final Project
+# LSA Final Project － 「一天一番茄，考試100分」
 ## Concept Development
 - Do you have these kinds of trouble? When the exam is coming, but still can not concentrate on your studies? Wasting your time on looking at your phone？
 - We hope by develope「一天一番茄，考試100分」to supervise the status of studies and improve efficiency (reduce interference and distraction). 
