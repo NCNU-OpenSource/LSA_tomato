@@ -11,7 +11,11 @@
     - If the sysytem detects the gesture of 『ok』, it will play relax music.
 
     ![](https://i.imgur.com/gP07HMp.png)
-    - If you want to stop the music by detects the gesture of 『5』. ![](https://i.imgur.com/5FYw4Pl.png)
+    - If you want to stop the music by detects the gesture of 『5』. 
+
+     ![](https://i.imgur.com/l829TlY.png)
+
+
 
     - If the sysytem detects the gesture of 『2』, it will take a foto.
     
@@ -49,8 +53,10 @@
     ![](https://i.imgur.com/nI3ubhD.png)
 
     
-    - ~~揚聲器~~ ![](https://i.imgur.com/3nGeAop.png){:height="50%" width="50%"}
-    - ~~將轉接頭插入揚聲器~~ ![](https://i.imgur.com/D3aNLnT.png)
+    - ~~揚聲器~~ ![](https://i.imgur.com/qMFznTV.jpg)
+    - ~~將轉接頭插入揚聲器~~ 
+    ![](https://i.imgur.com/SSF3Jj5.png)
+
 
 3. ~~建構環境~~：
 - Problem：
@@ -113,32 +119,40 @@
 ## Usage
 1. Clone the project on GitHub：`git clone https://github.com/wyping314/LSA_project.git`
 2.  `cd LSA_project`
-3. `vim mainproject.py`
+3. `vim tomato.py`
     1. Modify the path to store pictures:`save_path` 
-    2. Modify the recipient `msg['To']` whic in `def mail()` 
-    3. Modify two parameters `log in` which in `def mail()`
+    2. Modify the recipient `msg['To']` which in `def mail()` 
+    3. Modify two parameters `smtp.login()` which in `def mail()`
         - [產生及使用應用程式密碼](https://support.google.com/accounts/answer/185833)
-    4. Adjust the parameters of the lens `VideoCapture()` (total of two places) according to your equipment
+    4. Adjust the parameters of the lens `VideoCapture()` (total of three places) according to your equipment
 4. execute program `python3 mainproject.py`
 5. The system will pop up the camera window
-6. System start countdown
-7. System start detecting the user
+6. Read how to use & Choose mode
+7. Pomodoro Technique start
+8. System start detecting the user
 
 ## Code
 ### 番茄鐘回傳剩餘時間
 * 選擇模式
 ```python=
-if working_time == 0:
-    if text=='1':
-        working_time = 0.1        # 5 minute
-        break_time = 0.1          # 1 minute
-    elif text=='2':
+start = False
+if start == False:
+    if text == '1':
+        # test mode
+        working_time = 0.1
+        break_time = 0.1
+        start = True
+        a = tomato(working_time, 'Go working')
+    elif text == '2':
         working_time = 10       # 10 minute
         break_time = 5          # 5 minute
-    elif text=='ok':
+        start = True
+        a = tomato(working_time, 'Go working')
+    elif text == 'ok':
         working_time = 25       # 25 minute
         break_time = 5          # 5 minute
-    a = tomato(working_time, 'It is times to take a break')
+        start = True
+        a = tomato(working_time, 'Go working')
 ```
 * 計算剩餘時間
 ```python=
@@ -150,22 +164,20 @@ def tomato(minutes):
 ```
 * 在畫面上顯示讀書和休息的剩餘時間
 ```python=
-a = a - 0.3
+a = a - 0.09
 minute = str(int(a / 60)).zfill(2)
 sec = str(int(a % 60)).zfill(2)
-countdown = "remaining time=" + minute + ":" + sec
-cv2.putText(frame, countdown, (300,220), fontFace, 2, (0,0,0), 3, lineType) # 印出文字
-if int(minute) <= 0 and int(sec) <= 0:
-    count+=1
-    time.sleep(1)
-    if count == 8:
-        mail(totaltime)
-        break
-    elif count%2 != 0:
-        a += relaxtime*60
-    elif count%2 == 0:
-        totaltime += 1
-        a += studytime*60
+countdown = "remaining time = " + minute + ":" + sec
+cv2.putText(frame, countdown, (10,110), fontFace, 1, (0, 0, 0), 3, lineType) # 印出文字
+    if int(minute) <= 0 and int(sec) <= 0:
+        count += 1
+        time.sleep(1)
+        # if count == 4:
+            #     break
+        if count%2 != 0:
+            a = tomato(break_time, 'Take a break')
+        elif count%2 == 0:
+            a = tomato(working_time, 'Go working')
 
 ```
 ### 辨識手勢
@@ -274,25 +286,30 @@ if len(classIds) != 0:
 ```
 ### 寄信給使用者
 ```python=
-def mail(time):
-    today=datetime.date.today()
-    content='完成:'+str(time)+'個循環'
-    msg = MIMEMultipart() # 使用多種格式所組成的內容
-    msg.attach(MIMEText(content, 'html', 'utf-8')) #加入HTML
-    with open('photo.jpg', 'rb') as file:
+def mail(count, working_time, break_time):
+    today = datetime.date.today()
+    content = 'working time = ' + str(working_time) + ' minutes' + '<br>'
+    content += 'break_time = ' + str(break_time) + ' minutes' + '<br>'
+    content += '完成：' + str(count) + '個循環'
+    msg = MIMEMultipart()                          # 使用多種格式所組成的內容
+    msg.attach(MIMEText(content, 'html', 'utf-8')) # 加入 HTML 內容
+    # 使用 python 內建的 open 方法開啟指定目錄下的檔案
+    with open('photo_0.jpg', 'rb') as file:
         img = file.read()
-    attach_file = MIMEApplication(img, Name='photo.jpg') #附加圖片
-    msg.attach(attach_file) #加入附加檔案圖片
+    attach_file = MIMEApplication(img, Name = 'photo_0.jpg') # 設定附加檔案圖片
+    msg.attach(attach_file)                                  # 加入附加檔案圖片
 
-    msg['Subject']="%s 番茄鐘使用時間"%today
-    msg['From']="tamtoooo"
-    msg['To']='email帳號'
+    msg['Subject'] = "%s 番茄鐘使用時間" % today
+    msg['From'] = "tomato"
+    msg['To'] = 'account@mail1.ncnu.edu.tw'
 
-    smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    # smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    smtp = smtplib.SMTP('smtp.gmail.com', 25)
     smtp.ehlo()
     smtp.starttls()
-    #要去google 帳戶>安全性>app 生成 
-    smtp.login('email帳號','生成金鑰')
+    # smtp.login() 的第二個參數 : 開啟應用程式密碼
+    # https://support.google.com/accounts/answer/185833
+    smtp.login('account@gmail.com', '金鑰')
     status = smtp.send_message(msg)
     print(status)
     smtp.quit()
@@ -306,6 +323,11 @@ def mail(time):
 - 林千榆：setting environment、program（Sent back mail）、program development
 - 張可葭：setting environment、raspi research、github content、ppt、Demo veido
 - 黃郁庭：setting environment、program(detect cell phone, other funtions)、program development、Thoughts on the topic、raspi research
+
+
+## Thankful
+- 感謝在MOLi學長姐的無私幫忙
+- 感謝提供設備的柏瑋助教及MOLi
 ## References
 - https://www.techbang.com/posts/98379-little-brother-self-created-ai-anti-procrastination-system-as?fbclid=IwAR2PgQqElHSfI_3qW6eX_MqQHOO5SmE8TiVfZ5AM1osQ4MiB0iV8enTHW9M
 - https://github.com/sjf0213/rpi/tree/master/opencv-gesture
@@ -321,8 +343,3 @@ def mail(time):
 - https://www.jeremymorgan.com/tutorials/raspberry-pi/how-to-install-opencv-raspberry-pi/
 - https://www.youtube.com/watch?v=QzVYnG-WaM4
 - https://www.circuspi.com/index.php/2022/07/29/ai-mediapipe-hand/
-
-
-## Thankful
-- 感謝在MOLi學長姐的無私幫忙
-- 感謝提供設備的柏瑋助教及MOLi
