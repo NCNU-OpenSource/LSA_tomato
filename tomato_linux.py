@@ -63,15 +63,15 @@ def mail(count, working_time, break_time):
 
     msg['Subject'] = "%s 番茄鐘使用時間" % today
     msg['From'] = "tomato"
-    msg['To'] = 's109213068@mail1.ncnu.edu.tw'
-
+    msg['To'] = 'send_to_who@mail1.ncnu.edu.tw'
+    
     # smtp = smtplib.SMTP('smtp.gmail.com', 587)
     smtp = smtplib.SMTP('smtp.gmail.com', 25)
     smtp.ehlo()
     smtp.starttls()
     # smtp.login() 的第二個參數 : 開啟應用程式密碼
     # https://support.google.com/accounts/answer/185833
-    smtp.login('kieililiyihiaihiai@gmail.com', 'noumdhcaiewnwsii')
+    smtp.login('who_to_send@gmail.com', 'sender_account_key')
     status = smtp.send_message(msg)
     print(status)
     smtp.quit()
