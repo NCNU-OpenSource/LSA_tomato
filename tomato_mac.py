@@ -55,27 +55,30 @@ net.setInputScale(1.0/ 127.5)
 net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
 
-
-def mail(time):
-    today=datetime.date.today()
-    content='完成:'+str(time)+'個循環'
-
-    msg = MIMEMultipart()                         # 使用多種格式所組成的內容
-    msg.attach(MIMEText(content, 'html', 'utf-8'))   # 加入 HTML 內容
+def mail(count, working_time, break_time):
+    today = datetime.date.today()
+    content = 'working time = ' + str(working_time) + ' minutes' + '<br>'
+    content += 'break_time = ' + str(break_time) + ' minutes' + '<br>'
+    content += '完成：' + str(count) + '個循環'
+    msg = MIMEMultipart()                          # 使用多種格式所組成的內容
+    msg.attach(MIMEText(content, 'html', 'utf-8')) # 加入 HTML 內容
     # 使用 python 內建的 open 方法開啟指定目錄下的檔案
     with open('photo_0.jpg', 'rb') as file:
         img = file.read()
-    attach_file = MIMEApplication(img, Name='photo_0.jpg')    # 設定附加檔案圖片
-    msg.attach(attach_file)                       # 加入附加檔案圖片
+    attach_file = MIMEApplication(img, Name = 'photo_0.jpg') # 設定附加檔案圖片
+    msg.attach(attach_file)                                  # 加入附加檔案圖片
 
-    msg['Subject']="%s 番茄鐘使用時間"%today
-    msg['From']="tamtoooo"
-    msg['To']='una910828@gmail.com'
-
-    smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    msg['Subject'] = "%s 番茄鐘使用時間" % today
+    msg['From'] = "tomato"
+    msg['To'] = 'send_to_who@mail1.ncnu.edu.tw'
+    
+    # smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    smtp = smtplib.SMTP('smtp.gmail.com', 25)
     smtp.ehlo()
     smtp.starttls()
-    smtp.login('dryfish828@gmail.com','ccwgwsrgdxqvcgtc')#要去google 帳戶>安全性>app 生成
+    # smtp.login() 的第二個參數 : 開啟應用程式密碼
+    # https://support.google.com/accounts/answer/185833
+    smtp.login('who_to_send@gmail.com', 'sender_account_key')
     status = smtp.send_message(msg)
     print(status)
     smtp.quit()
